@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CJ极限逃生 点映支持回馈抽奖</title>
+<style>
+@font-face {
+  font-family: 'CJ_ONLYONE';
+  src: url('CJ_ONLYONE_1.woff2') format('woff2'),
+       url('CJ_ONLYONE_1.ttf') format('truetype'),
+       url('CJ_ONLYONE_1.otf') format('opentype');
+}
+@font-face {
+  font-family: 'NotoSansCJK';
+  src: url('NotoSansCJKsc-Regular.woff2') format('woff2'),
+       url('NotoSansCJKsc-Regular.ttf') format('truetype'),
+       url('NotoSansCJKsc-Regular.otf') format('opentype');
+}
+:root {
+  --bg-page:      #1d1f22;
+  --bg-card:      #a5aaa3;
+  --bg-card2:     #22222f;
+  --bg-input:     #13131a;
+  --border:       #2e2e42;
+  --border-hover: #4a4a6a;
+  --accent:       #4a90e2;
+  --accent-dim:   rgba(201,168,76,0.15);
+  --text-primary: #f0eeea;
+  --text-second:  #8a8a9a;
+  --text-hint:    #555568;
+  --green:        #3db87a;
+  --green-dim:    rgba(61,184,122,0.12);
+  --red:          #e05c5c;
+  --red-dim:      rgba(224,92,92,0.12);
+  --yellow:       #e8b84b;
+  --radius-sm:    8px;
+  --radius-md:    12px;
+  --radius-lg:    16px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'CJ_ONLYONE', 'NotoSansCJK', sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 0 0 60px;
+}
+.app { max-width: 520px; margin: 0 auto; padding: 24px 16px; }
+ 
+.header {
+  text-align: center;
+  padding: 32px 20px 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+}
+.header-tag {
+  display: inline-block;
+  background: var(--red-dim);
+  color: var(--red);
+  font-size: 11px; font-weight: 600;
+  padding: 4px 12px; border-radius: 20px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(224,92,92,0.25);
+}
+.header h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.header-sub { font-size: 14px; color: var(--text-second); }
+.dates-row { display: flex; gap: 8px; justify-content: center; margin-top: 18px; }
+.date-badge {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 16px; font-size: 13px; font-weight: 500;
+}
+ 
+.weight-banner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px; margin-bottom: 20px;
+  display: flex; gap: 12px; align-items: stretch;
+}
+.weight-item {
+  flex: 1; text-align: center; padding: 14px 8px;
+  border-radius: var(--radius-md);
+  background: var(--bg-input); border: 1px solid var(--border);
+}
+.weight-item.gold { border-color: var(--accent); background: var(--accent-dim); }
+.weight-num { font-size: 36px; font-weight: 700; line-height: 1; }
+.weight-item.gold .weight-num { color: var(--accent); }
+.weight-unit { font-size: 12px; color: var(--text-second); margin-top: 4px; }
+.weight-label { font-size: 12px; color: var(--text-second); margin-top: 8px; line-height: 1.5; }
+.weight-vs { display: flex; align-items: center; font-size: 12px; color: var(--text-hint); font-weight: 600; }
+ 
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px; margin-bottom: 14px;
+  transition: opacity 0.2s;
+}
+.card.disabled { opacity: 0.4; pointer-events: none; }
+.card-title {
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.step-num {
+  width: 24px; height: 24px;
+  background: var(--accent); color: #1a1200;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+ 
+.form-row { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; color: var(--text-second); margin-bottom: 7px; font-weight: 500; }
+.req { color: var(--red); margin-left: 2px; }
+.label-hint { font-size: 11px; color: var(--text-hint); margin-left: 6px; }
+ 
+input[type="text"], input[type="email"], input[type="tel"], select {
+  width: 100%; padding: 10px 14px; font-size: 14px;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary); outline: none; transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+select option { background: var(--bg-card); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+ 
+.email-row { display: flex; gap: 8px; }
+.email-row input { flex: 1; }
+.send-btn {
+  padding: 10px 14px; font-size: 13px; font-weight: 600;
+  background: var(--bg-card2); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; white-space: nowrap; transition: all 0.2s;
+}
+.send-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+ 
+.hint { font-size: 11px; margin-top: 6px; color: var(--text-hint); }
+.hint.ok { color: var(--green); }
+.hint.err { color: var(--red); }
+ 
+.upload-zone {
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 22px; text-align: center; cursor: pointer;
+  transition: all 0.2s; background: var(--bg-input);
+}
+.upload-zone:hover { border-color: var(--accent); background: var(--accent-dim); }
+.upload-icon { font-size: 28px; margin-bottom: 8px; }
+.upload-label { font-size: 13px; color: var(--text-second); }
+.upload-sub { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
+.upload-ok { font-size: 12px; color: var(--green); margin-top: 8px; font-weight: 500; }
+ 
+.location-box { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.location-top {
+  padding: 14px; background: var(--accent-dim);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.location-bonus-title { font-size: 13px; font-weight: 600; color: var(--accent); }
+.location-bonus-sub { font-size: 11px; color: var(--text-second); margin-top: 3px; }
+.tickets-badge {
+  background: var(--bg-input); border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px; font-size: 14px; font-weight: 700; color: var(--accent);
+  white-space: nowrap; transition: all 0.3s; flex-shrink: 0;
+}
+.loc-btn {
+  width: 100%; padding: 12px; border: none;
+  background: var(--bg-card2); color: var(--text-primary);
+  font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background 0.2s;
+}
+.loc-btn:hover { background: var(--bg-input); }
+.loc-result {
+  font-size: 12px; padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  color: var(--text-second); display: none;
+}
+.loc-result.ok { color: var(--green); background: var(--green-dim); }
+ 
+.ticket-preview {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  background: var(--green-dim);
+  border: 1px solid rgba(61,184,122,0.25);
+  border-radius: var(--radius-md);
+  margin-top: 14px;
+  font-size: 13px; font-weight: 600; color: var(--green);
+}
+ 
+.submit-btn {
+  width: 100%; padding: 15px;
+  background: var(--accent); color: #1a1200;
+  border: none; border-radius: var(--radius-lg);
+  font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.2s, transform 0.1s; margin-top: 4px;
+}
+.submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.submit-btn:active { transform: translateY(0); }
+ 
+.rules-box {
+  margin-top: 14px; padding: 16px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.rules-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.rules-list li {
+  font-size: 12px; color: var(--text-second);
+  padding-left: 16px; position: relative; line-height: 1.6;
+}
+.rules-list li::before { content: "·"; position: absolute; left: 4px; color: var(--text-hint); }
+ 
+.success-card {
+  text-align: center; padding: 48px 24px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.success-icon { font-size: 52px; margin-bottom: 16px; }
+.success-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.ticket-num {
+  font-size: 32px; font-weight: 700; letter-spacing: 4px;
+  color: var(--accent); margin: 16px 0; font-family: monospace;
+}
+.tickets-earned {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-dim); border: 1px solid rgba(201,168,76,0.3);
+  border-radius: var(--radius-lg);
+  padding: 10px 24px; margin: 12px 0;
+  font-size: 15px; font-weight: 600; color: var(--accent);
+}
+.success-sub { font-size: 13px; color: var(--text-second); line-height: 1.8; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+ 
+  <div class="header">
+    <!-- <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALAAAACUCAMAAAAEVFNMAAAA5FBMVEX///8AfcPjGyP4lx0AAADhAAD6+vrt7e1ZWVkAeMEAe8L4kgAAdsD4lhj4kAAAdL8AcL4Abb3//Pn4jAAsLCz09PSZmZnjFB0AaLu/1uv7x5qDqdX+8eb+9u6tra3Q0NBBQUESEhIeHh7Dw8NMTEx6enqhoaHj4+P75+jiBhTr8vjU5PFtpNP5pkz6tnf81bP83cGNjY01NTVmZma4uLj959P0vL32yMnvkpT7v4rkKzD8z6fqcnOwy+WZvt87ichfl876rmH4nS/pZGjwpablPEHthIf42NnmSk/5oD/nV1fzsbOUpmz3AAAJB0lEQVR4nNWcaUPqOhCGy1ZsSwFFQJBFVJRVQOAAKrK4ov///9y2dEnStCShGO77EQp9HN7MTCY9RxD2V2seSskhRwn5tRXA1x5K4usiDeJqklOLV95YnmovEgjuFnnZ5k2Glfh6IblxDV9IBd5wOHVSmPCaQU7MedO51FokvHANWxybkVsLDztYOj2yGO/iDcnyMflY3MmrEYeOJ1eIHT//WkoteXPaek0R8IZC6WOxceGCiPdoTNFaeOZfRIlL3qyGLskMoev0GELcxvUPHpKWvGkFggwMmYJ/iAvkhtCBO7x5xQ5NgEOhBe8QFyRyB+vi3gQR1gxHssgXWKYLsFbu+PZAhVNK3pC84ApM1PXAwHzrM3FVdiTxXHbtEAPwkuOgosAAHEpx9MQrXdUwgTn2bK/Ua06XxA/4kgn4gpuJRTZgfuWZEVhe/t+A+bVsbMAhidv2mS1LcDQxI7C05NVjFhgKnSFeiY2ll9DFb7vP0K3pSnMzMeUW1JLEbfNMv+MwxHHbQTH2AYH59T8UgzVQErf+p029bTbEb2RFO/mxgPnNtulma5Z47kQ7LMQJFLhcGj/PVpt1RI2su6uHYn9cKp8dBrjFUu0keF83Lq4imUxSUbdSkslMct19KPZKhyCeM3RAEHB/HVEUNYJI41bUdbdYCj7QDKkNAB6vMi5YgDqZUR/6AQdaDFHH2AHurxVPXBM6qXQfxoES7zxo9gbuu72AY1Yy6145SOIQJbF1AHa2JuE1mDObYoBublG6wkprsyQhrxHmbj9A4iXVyjMLB3mAzSivglt+rctTinxsPlPTp+LVlNwEGOQ5hS2kbfNT3JUh3EFOFoMjbnWIu2N5+4kZNbAW5FlwxMJc8n5QCQrw0rj87IEBWFWCJBYuiXxxWmAHjkQygRK3O+mdOVk25xKMwBG1FySx2F6mdxyPWjN4ZmA14Oai0An5eVleWDs6lkWnS1l7FL14dVS5q4yqcUpisX2ZSnvt9uQL+zCUPq2ZwiW3bHVwfl2L6qpdn9erWdcFcZeAa8T5Qk7hrCEDu41nVmB1jbZv95WrKKzrXBUKfu4x6tIA+o725VJOI0lDTi+Bw+Y+I68W4geY14VrIA+cCMaHmAsQYK2UtOcd6eI0lZBkTVIifbGYgxOJEl0vASoDdpv3JzgaXSPrkhz27RxqG8Mc7ddOZ6mrM0fnJ11mYAUIcfXci1eL4TbIIu4XiEYrOGA/0bSXsNSNHeKbmjdvNHpiDM9F7DXnVW80vPoZVuCIYlWPGz9cTbdZT+CRHxtezBG2PXF/DRDU6qMbTblbEGuoEYtu2us6dXw1rVgTW0TtGuUuDqy3xxv77CRed/6OE72MiFtlnRfZzln67CFOGqkYWP13EEK1br5cB8ueCP0VDBpv2BNbX4B+avQHFkd6kGsV6M/YG1hg7H8iZnm2whi9vsd8edzVVOwP3GcG1lfdvZ2Bb8hutz+wwFzs1K4g3Fn3rxPeLQDgInMqXgtZK0Wcu1qzwwGXVeZlJ9zbCYL0brTAYsP9Gnt5tovcI3EJoAFuTN7CzWbzY/oFvz5mdfHaTsJDUl4K4Mb7R6yZD4fD+VhsCseZdWe3sZMa2tYGAPzvO6bTbhV7moDvldiWnboSrJ6RMKeRAzfeAFwjyu/g2w9MLlZmgtUv4IrGPsCTj1gYUXMKvD9mShTJZ8G6O2lSIwT+jTVRXiTGTNv9zNgGJs+pJMBTV3i3Mf7nXMK0t1NLh7HEJ2xfJ8ZPQK54pl93arcs3Jp3J9857Ab+xMdXD/EHcNmG2hT6EPMAac2bV8tugI371OtOnwhavc9JYMAe/rVMAdQ82uqhrrVdc9W8+zVxIt4B/O7Hq4X4xdkNUJ7PbEc/9gaU2BP+wJMwfr05xEDFo9zxZ/QtqGhvOEjzhC/wmUd+cNT8Bi6n6tqUlfGZinX/W8I9sB9w9ttdL1whBpJxmWZupWyPv7L2RBI7JaMDnu7mDTdfgA+MyU2hrMyJtr1HwhHHK4NBFTaLD/A//wVnKg/2bUViUySt8bDozAEHCEI8ZyzJGjSu8AZuNHcZeOuJT+AzxGcewHR4ZANHr6DkdmPPK3MAsQ08REwvvhAYwiAGP1gmy21qBDiUAQe/V6NqPCuK2ftqBZzAAhsoGxjdZu/IwAAw1BmXiAqeCh44i7cAWrR2O6wPh/Aw+A4XYQSY0BCa8j/QB3sED3wgxwVx/Kwavxrj9l8BA/8QGgKpzzpxchexskF+TfzxhalreMhuFXNkV/VLzKtlNsgT+smSP7GycZ0qZn2IkRJopcEatElpfJMaQgd+Qdarf4zxp6AjvC3OXT3GrfnOFfSqb4/m9gQ6XBn7PGilrPHPKsVzmIOZuqvDsIeHkFEaNLxwB7RVaeVVQXyeoYkjR3Xnd5gZu50DobJBmoIt4E/X9549Z3BOVjIz3wertFJcH56cnAzrgwq23a1aRzNQ5phQ4eqewHx1eRZBrawkVwSP24nwCTIs6zd4BL1CXOOcEGO/fDxLamFWraWWzHR7ez635pzfQJvWLzoHh3EmNtUzns/VHyRdb2Z7PyLhZBK4ypHXDBt46nELzczjfu/5uTfe/4GOqpOr69BinFAHGG6KDyNx4KQPuHGmd7DeThz831I5Ld05MnT52rXvxAF/YObygerePmkeoBnEb3DiCYz0P8HL7PKvcq7sTFnkTIFzwYPIcER9hJkFEPftkGK/BwYeXA2q+HXyQe/gMLrrOIA8F/UXC+4fAHuKzRH8gLMMSZgrcIPNwvyA6fseE/jQWcJLjBbmB8xS5gx59ZeHFsF8FafD9xJeYmh8DODDd2se2jlxx+sP+uFggT23SEcLzItXIB5ZQmq+cQNmyxL8HCG8sOTh5g+vpKY/GMECzKvMCWy9RP6D439xRzUXNsXRwQLZWSLCy61oGJrQRphfG2GKcrCWb3I1hEC97PjtPm1RtcQ+Y8s/U4PihO4I4qvpi7ShyKMHdLw0IevZmk+815utL/eTlpjwvnHOZ6AaPzuCnI+F/3H+P2dhie9PPsjN2MeU/HHUP1Lj0wM5H4v9TI/IDY4av9/up3DzsafPr+Bw/wMQ0wW6UHhHRgAAAABJRU5ErkJggg==" style="width:120px;margin:0 auto 12px;display:block;" /> -->
+    <div class="header-tag">🎬 CJ内部员工活动</div>
+    <h1>极限逃生 点映支持回馈</h1>
+    <div class="header-sub">去看了就来参与抽奖，奖品是 xx</div>
+    <div class="dates-row">
+      <div class="date-badge">6月1日 点映</div>
+      <div class="date-badge">6月4日 点映</div>
+      <div class="date-badge">6月5日 开奖</div>
+    </div>
+  </div>
+ 
+  <div class="weight-banner">
+    <div class="weight-item">
+      <div class="weight-num">1</div>
+      <div class="weight-unit">张抽奖票</div>
+      <div class="weight-label">上传现场照<br>+ 票根</div>
+    </div>
+    <div class="weight-vs">VS</div>
+    <div class="weight-item gold">
+      <div class="weight-num">2</div>
+      <div class="weight-unit">张抽奖票</div>
+      <div class="weight-label">凭证 + 到场<br>📍 定位打卡</div>
+    </div>
+  </div>
+ 
+  <div id="form-view">
+ 
+    <div class="card">
+      <div class="card-title"><span class="step-num">1</span> 验证企业邮箱身份</div>
+      <div class="form-row">
+        <label class="form-label">企业邮箱 <span class="req">*</span></label>
+        <div class="email-row">
+          <input type="email" id="email-input" placeholder="yourname@company.com" />
+          <button class="send-btn" id="send-btn" onclick="sendCode()">发送验证码</button>
+        </div>
+        <div class="hint" id="send-hint">验证码将发送到您的企业邮箱</div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">邮箱验证码 <span class="req">*</span></label>
+        <div class="email-row">
+          <input type="text" id="code-input" placeholder="6位验证码" maxlength="6" style="letter-spacing:4px;" />
+          <button class="send-btn" onclick="verifyCode()">验证</button>
+        </div>
+        <div class="hint" id="verify-hint" style="display:none;"></div>
+      </div>
+    </div>
+ 
+    <div class="card disabled" id="info-card">
+      <div class="card-title"><span class="step-num">2</span> 填写个人信息</div>
+      <div class="form-row">
+        <label class="form-label">姓名 <span class="req">*</span></label>
+        <input type="text" id="name-input" placeholder="请填写真实姓名" />
+      </div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label class="form-label">公司 <span class="req">*</span></label>
+          <select id="company-input">
+            <option value="">请选择</option>
+            <option>CJ ENM</option>
+            <option>CJ Foods</option>
+            <option>CJ Freshway</option>
+            <option>CJ BIO</option>
+            <option>CJ CINEMAS</option>
+            <option>CJ 4DPLEX</option>
+            <option>CJ Logistics</option>
+            <option>CJ China</option>
+            <option>其他</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">部门 <span class="req">*</span></label>
+          <input type="text" id="dept-input" placeholder="所属部门" />
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">手机号 <span class="req">*</span></label>
+        <input type="tel" id="phone-input" placeholder="用于获奖通知" maxlength="11" />
+      </div>
+      <div class="form-row">
+        <label class="form-label">观影日期 <span class="req">*</span></label>
+        <select id="date-input">
+          <option value="">请选择</option>
+          <option value="6.1">6月1日</option>
+          <option value="6.4">6月4日</option>
+        </select>
+      </div>
+    </div>
+ 
+    <div class="card disabled" id="proof-card">
+      <div class="card-title"><span class="step-num">3</span> 上传观影凭证</div>
+ 
+      <div class="form-row">
+        <label class="form-label">现场照片 <span class="req">*</span><span class="label-hint">影厅内拍摄，含时间水印更佳</span></label>
+        <div class="upload-zone" onclick="document.getElementById('photo-file').click()">
+          <input type="file" id="photo-file" accept="image/*" onchange="handleFile(this,'photo-ok')" style="display:none;" />
+          <div class="upload-icon">📷</div>
+          <div class="upload-label">点击上传现场照</div>
+          <div class="upload-sub">jpg / png</div>
+          <div class="upload-ok" id="photo-ok"></div>
+        </div>
+      </div>
+ 
+      <div class="form-row">
+        <label class="form-label">票根 <span class="req">*</span><span class="label-hint">观影凭证</span></label>
+        <div class="upload-zone" onclick="document.getElementById('ticket-file').click()">
+          <input type="file" id="ticket-file" accept="image/*" onchange="handleFile(this,'ticket-ok')" style="display:none;" />
+          <div class="upload-icon">🎫</div>
+          <div class="upload-label">点击上传票根</div>
+          <div class="upload-sub">纸质票根</div>
+          <div class="upload-ok" id="ticket-ok"></div>
+        </div>
+      </div>
+ 
+      <div class="form-row">
+        <label class="form-label">到场定位打卡</label>
+        <div class="location-box">
+          <div class="location-top">
+            <div style="flex:1;">
+              <div class="location-bonus-title">打卡成功 = 双倍抽奖机会 🎯</div>
+              <div class="location-bonus-sub">需在电影院现场获取</div>
+            </div>
+            <div class="tickets-badge" id="tickets-badge">1张票</div>
+          </div>
+          <button class="loc-btn" onclick="getLocation()">
+            📍 <span id="loc-btn-text">获取当前位置（+1张抽奖票）</span>
+          </button>
+          <div class="loc-result" id="loc-result"></div>
+        </div>
+      </div>
+ 
+      <div id="ticket-preview" style="display:none;">
+        <div class="ticket-preview">
+          🎟 <span id="ticket-preview-text">您将持有 1 张抽奖票参与抽奖</span>
+        </div>
+      </div>
+    </div>
+ 
+    <button class="submit-btn" onclick="submitEntry()">✨ 提交参与抽奖</button>
+ 
+    <div class="rules-box">
+      <ul class="rules-list">
+        <li>仅限CJ内部员工参与，企业邮箱验证身份，每人只能提交一次</li>
+        <li>上传现场照 + 购票凭证 = <strong style="color:var(--text-primary);">1张抽奖票</strong></li>
+        <li>额外完成到场定位打卡 = <strong style="color:var(--accent);">2张抽奖票</strong>，中奖概率翻倍</li>
+        <li>凭证由人工审核，通过后按票数进入抽奖池</li>
+        <li>6月5日公开随机抽奖，通过手机/邮件通知获奖者</li>
+      </ul>
+    </div>
+  </div>
+ 
+  <div id="success-view" style="display:none;">
+    <div class="success-card">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">提交成功！</div>
+      <div class="ticket-num" id="ticket-num">—</div>
+      <div class="tickets-earned">🎟 <span id="earned-text">持有 1 张抽奖票</span></div>
+      <div class="success-sub">
+        这是您的专属抽奖编号，请截图保存<br>
+        凭证经人工审核通过后正式入池<br>
+        6月5日公开开奖，届时会通知您
+      </div>
+    </div>
+  </div>
+ 
+</div>
+<script>
+let emailVerified = false, verifiedEmail = '', locationData = null;
+let generatedCode = '', pendingEmail = '', cdTimer = null;
+ 
+/* ══════════════════════════════════
+   飞书配置（不需要改动）
+   ══════════════════════════════════ */
+const FEISHU_APP_ID     = 'cli_aa9eb969deba9cbc';
+const FEISHU_APP_SECRET = 'Y9sfWz7sw2e0iSCaDiSFtejOoaeNF4zQ';
+const FEISHU_APP_TOKEN  = 'KVkwb9Npva34gWsog61c9o5onvv';
+const FEISHU_TABLE_ID   = 'tblkjCevUYnwH1nz';
+ 
+/* 获取 tenant_access_token */
+async function getToken() {
+  const res = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ app_id: FEISHU_APP_ID, app_secret: FEISHU_APP_SECRET })
+  });
+  const data = await res.json();
+  if (!data.tenant_access_token) throw new Error('获取飞书Token失败');
+  return data.tenant_access_token;
+}
+ 
+/* 上传图片到飞书，返回 file_token */
+async function uploadFile(file, token) {
+  const form = new FormData();
+  form.append('file_name', file.name);
+  form.append('parent_type', 'bitable_file');
+  form.append('parent_node', FEISHU_APP_TOKEN);
+  form.append('size', file.size);
+  form.append('file', file);
+  const res = await fetch('https://open.feishu.cn/open-apis/drive/v1/medias/upload_all', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.code !== 0) throw new Error('图片上传失败: ' + data.msg);
+  return data.data.file_token;
+}
+ 
+/* 写入一行到多维表格 */
+async function saveEntry(entry, photoFile, ticketFile) {
+  const token = await getToken();
+ 
+  // 并行上传两张图片
+  const [photoToken, ticketToken] = await Promise.all([
+    uploadFile(photoFile, token),
+    uploadFile(ticketFile, token)
+  ]);
+ 
+  const fields = {
+    '抽奖编号': entry.id,
+    '姓名':     entry.name,
+    '公司':     entry.company,
+    '部门':     entry.dept,
+    '手机':     entry.phone,
+    '邮箱':     entry.email,
+    '观影日期': entry.date,
+    '定位打卡': entry.location || '未打卡',
+    '抽奖票数': entry.tickets,
+    '现场照':   [{ file_token: photoToken }],
+    '购票凭证': [{ file_token: ticketToken }],
+    '审核状态': '待审核',
+    '提交时间': entry.time
+  };
+ 
+  const res = await fetch(
+    'https://open.feishu.cn/open-apis/bitable/v1/apps/' + FEISHU_APP_TOKEN + '/tables/' + FEISHU_TABLE_ID + '/records',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ fields })
+    }
+  );
+  const data = await res.json();
+  if (data.code !== 0) throw new Error('写入表格失败: ' + data.msg);
+}
+ 
+function sendCode() {
+  const email = document.getElementById('email-input').value.trim();
+  if (!email || !email.includes('@')) { setHint('send-hint','请输入有效企业邮箱','err'); return; }
+  generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+  pendingEmail = email;
+  setHint('send-hint', '✓ 验证码已发送（演示模式：' + generatedCode + '）', 'ok');
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true; let cd = 60;
+  cdTimer = setInterval(() => {
+    cd--; btn.textContent = cd + 's后重发';
+    if (cd <= 0) { clearInterval(cdTimer); btn.disabled = false; btn.textContent = '重新发送'; }
+  }, 1000);
+}
+ 
+function verifyCode() {
+  const code = document.getElementById('code-input').value.trim();
+  const email = document.getElementById('email-input').value.trim();
+  if (code === generatedCode && email === pendingEmail) {
+    emailVerified = true; verifiedEmail = email;
+    setHint('verify-hint', '✓ 邮箱验证成功！', 'ok');
+    ['info-card','proof-card'].forEach(id => document.getElementById(id).classList.remove('disabled'));
+    document.getElementById('email-input').disabled = true;
+    document.getElementById('code-input').disabled = true;
+    document.getElementById('send-btn').disabled = true;
+    updatePreview();
+  } else {
+    setHint('verify-hint', '✗ 验证码错误，请重试', 'err');
+  }
+}
+ 
+function setHint(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.className = 'hint ' + (type||''); el.style.display = 'block';
+}
+ 
+function handleFile(input, okId) {
+  if (input.files && input.files[0]) {
+    document.getElementById(okId).textContent = '✓ ' + input.files[0].name;
+    updatePreview();
+  }
+}
+ 
+function getLocation() {
+  document.getElementById('loc-btn-text').textContent = '定位中…';
+  if (!navigator.geolocation) { locFail(); return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    locationData = { lat: pos.coords.latitude.toFixed(4), lng: pos.coords.longitude.toFixed(4) };
+    document.getElementById('loc-btn-text').textContent = '✓ 已获取，点击重新定位';
+    const r = document.getElementById('loc-result');
+    r.textContent = '📍 ' + locationData.lat + ', ' + locationData.lng + ' — 打卡成功！';
+    r.className = 'loc-result ok'; r.style.display = 'block';
+    document.getElementById('tickets-badge').textContent = '2张票 🎉';
+    updatePreview();
+  }, locFail);
+}
+function locFail() {
+  document.getElementById('loc-btn-text').textContent = '获取失败，点击重试';
+  const r = document.getElementById('loc-result');
+  r.textContent = '无法获取定位，可跳过（持1张票参与）';
+  r.className = 'loc-result'; r.style.display = 'block';
+}
+function updatePreview() {
+  const t = locationData ? 2 : 1;
+  document.getElementById('ticket-preview').style.display = 'block';
+  document.getElementById('ticket-preview-text').textContent =
+    '您将持有 ' + t + ' 张抽奖票参与抽奖' + (t === 2 ? ' 🎉 定位加成已生效' : '');
+}
+ 
+async function submitEntry() {
+  if (!emailVerified) { alert('请先完成邮箱验证'); return; }
+  const name    = document.getElementById('name-input').value.trim();
+  const company = document.getElementById('company-input').value;
+  const dept    = document.getElementById('dept-input').value.trim();
+  const phone   = document.getElementById('phone-input').value.trim();
+  const date    = document.getElementById('date-input').value;
+  const photo   = document.getElementById('photo-file').files[0];
+  const ticket  = document.getElementById('ticket-file').files[0];
+  if (!name || !company || !dept || !phone || !date) { alert('请填写所有必填信息'); return; }
+  if (!photo || !ticket) { alert('请上传现场照和购票凭证'); return; }
+ 
+  const id = 'CJ' + Date.now().toString().slice(-6);
+  const tickets = locationData ? 2 : 1;
+  const entry = {
+    id, name, company, dept, phone, date, email: verifiedEmail,
+    photo: photo.name, ticket: ticket.name,
+    location: locationData ? locationData.lat + ',' + locationData.lng : null,
+    tickets, status: 'pending',
+    time: new Date().toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })
+  };
+ 
+  // 显示提交中状态
+  const btn = document.querySelector('.submit-btn');
+  btn.textContent = '上传中，请稍候…'; btn.disabled = true;
+ 
+  try {
+    await saveEntry(entry, photo, ticket);
+    document.getElementById('ticket-num').textContent = id;
+    document.getElementById('earned-text').textContent = '持有 ' + tickets + ' 张抽奖票' + (tickets === 2 ? ' 🎉' : '');
+    document.getElementById('form-view').style.display = 'none';
+    document.getElementById('success-view').style.display = 'block';
+  } catch(err) {
+    btn.textContent = '✨ 提交参与抽奖'; btn.disabled = false;
+    alert('提交失败：' + err.message + '\n请检查网络后重试');
+  }
+}
+</script>
+</body>
+</html>
+ 
