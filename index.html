@@ -302,10 +302,13 @@ select option { background: var(--bg-card); }
           <label class="form-label">公司 <span class="req">*</span></label>
           <select id="company-input">
             <option value="">请选择</option>
-            <option>CJ娱乐</option>
-            <option>CJ制作</option>
-            <option>CJ发行</option>
-            <option>CJ中国</option>
+            <option>CJ Foods</option>
+            <option>CJ Freshway</option>
+            <option>CJ BIO</option>
+            <option>CJ ENM</option>
+            <option>CJ CGV</option>
+            <option>CJ Logistics</option>
+            <option>CJ China</option>
             <option>其他</option>
           </select>
         </div>
@@ -348,7 +351,7 @@ select option { background: var(--bg-card); }
           <input type="file" id="ticket-file" accept="image/*" onchange="handleFile(this,'ticket-ok')" style="display:none;" />
           <div class="upload-icon">🎫</div>
           <div class="upload-label">点击上传购票凭证</div>
-          <div class="upload-sub">淘票票 / 猫眼 / 纸质票根</div>
+          <div class="upload-sub">截图/纸质票根</div>
           <div class="upload-ok" id="ticket-ok"></div>
         </div>
       </div>
@@ -359,7 +362,7 @@ select option { background: var(--bg-card); }
           <div class="location-top">
             <div style="flex:1;">
               <div class="location-bonus-title">打卡成功 = 双倍抽奖机会 🎯</div>
-              <div class="location-bonus-sub">需在电影院现场获取，在家无法定位</div>
+              <div class="location-bonus-sub">需在电影院现场获取</div>
             </div>
             <div class="tickets-badge" id="tickets-badge">1张票</div>
           </div>
@@ -384,7 +387,7 @@ select option { background: var(--bg-card); }
         <li>仅限CJ内部员工参与，企业邮箱验证身份，每人只能提交一次</li>
         <li>上传现场照 + 购票凭证 = <strong style="color:var(--text-primary);">1张抽奖票</strong></li>
         <li>额外完成到场定位打卡 = <strong style="color:var(--accent);">2张抽奖票</strong>，中奖概率翻倍</li>
-        <li>凭证由HR人工审核，通过后按票数进入抽奖池</li>
+        <li>凭证由人工审核，通过后按票数进入抽奖池</li>
         <li>6月5日公开随机抽奖，通过手机/邮件通知获奖者</li>
       </ul>
     </div>
@@ -398,7 +401,7 @@ select option { background: var(--bg-card); }
       <div class="tickets-earned">🎟 <span id="earned-text">持有 1 张抽奖票</span></div>
       <div class="success-sub">
         这是您的专属抽奖编号，请截图保存<br>
-        凭证经HR审核通过后正式入池<br>
+        凭证经审核通过后正式入池<br>
         6月5日公开开奖，届时会通知您
       </div>
     </div>
