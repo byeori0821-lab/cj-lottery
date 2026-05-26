@@ -459,23 +459,47 @@ function compressImage(file) {
     reader.readAsDataURL(file);
   });
 }
-/* 上传图片到 ImgBB */
-async function uploadToImgBB(file) {
-  const form = new FormData();
-  form.append('image', file);
-  const res = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_API_KEY, {
-    method: 'POST',
-    body: form
+/* 上传图片到腾讯云COS */
+async function sha1hex(msg) {
+  const buf = new TextEncoder().encode(msg);
+  const hash = await crypto.subtle.digest('SHA-1', buf);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function hmacSHA1hex(key, msg) {
+  const enc = new TextEncoder();
+  const kb = typeof key === 'string' ? enc.encode(key) : key;
+  const k = await crypto.subtle.importKey('raw', kb, {name:'HMAC',hash:'SHA-1'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', k, enc.encode(msg));
+  return Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function uploadToCOS(file) {
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const key = 'uploads/' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + ext;
+  const path = '/' + key;
+  const host = COS_BUCKET + '.cos.' + COS_REGION + '.myqcloud.com';
+  const now = Math.floor(Date.now()/1000);
+  const keyTime = now + ';' + (now + 3600);
+  const signKey = await hmacSHA1hex(COS_SECRET_KEY, keyTime);
+  const httpStr = 'put\n' + path + '\n\nhost=' + host + '\n';
+  const strToSign = 'sha1\n' + keyTime + '\n' + await sha1hex(httpStr) + '\n';
+  const sig = await hmacSHA1hex(signKey, strToSign);
+  const auth = 'q-sign-algorithm=sha1&q-ak=' + COS_SECRET_ID +
+    '&q-sign-time=' + keyTime + '&q-key-time=' + keyTime +
+    '&q-header-list=host&q-url-param-list=&q-signature=' + sig;
+  const url = 'https://' + host + path;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Authorization': auth, 'Host': host, 'Content-Type': file.type || 'image/jpeg' },
+    body: file
   });
-  const data = await res.json();
-  if (!data.success) throw new Error('图片上传失败');
-  return data.data.url;
+  if (!res.ok) throw new Error('COS上传失败: ' + res.status);
+  return url;
 }
 
 async function saveEntry(entry, photoFile, ticketFile, reviewFile) {
-  const ticketUrl = await uploadToImgBB(ticketFile);
-  const reviewUrl = await uploadToImgBB(reviewFile);
-  const photoUrl  = photoFile ? await uploadToImgBB(photoFile) : null;
+  const ticketUrl = await uploadToCOS(ticketFile);
+  const reviewUrl = await uploadToCOS(reviewFile);
+  const photoUrl  = photoFile ? await uploadToCOS(photoFile) : null;
 
   const res = await fetch(WORKER_URL, {
     method: 'POST',
