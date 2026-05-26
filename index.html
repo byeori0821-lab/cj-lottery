@@ -470,9 +470,11 @@ function fileToBase64(file) {
 }
 
 async function saveEntry(entry, photoFile, ticketFile, reviewFile) {
-  const ticketUrl = await uploadToCOS(ticketFile);
-  const reviewUrl = await uploadToCOS(reviewFile);
-  const photoUrl  = photoFile ? await uploadToCOS(photoFile) : null;
+  const [ticketB64, reviewB64, photoB64] = await Promise.all([
+    fileToBase64(ticketFile),
+    fileToBase64(reviewFile),
+    photoFile ? fileToBase64(photoFile) : Promise.resolve(null)
+  ]);
 
   const res = await fetch(WORKER_URL, {
     method: 'POST',
@@ -483,12 +485,10 @@ async function saveEntry(entry, photoFile, ticketFile, reviewFile) {
       appToken:  FEISHU_APP_TOKEN,
       tableId:   FEISHU_TABLE_ID,
       entry,
-      ticketB64,
-      ticketName: ticketFile.name,
-      reviewB64,
-      reviewName: reviewFile.name,
-      photoB64:   photoB64 || null,
-      photoName:  photoFile ? photoFile.name : null
+      ticketB64, ticketName: ticketFile.name,
+      reviewB64, reviewName: reviewFile.name,
+      photoB64:  photoB64 || null,
+      photoName: photoFile ? photoFile.name : null
     })
   });
   const data = await res.json();
