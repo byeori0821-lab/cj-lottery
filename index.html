@@ -259,13 +259,13 @@ select option { background: var(--bg-card); }
     <div class="weight-item">
       <div class="weight-num">1</div>
       <div class="weight-unit">张抽奖票</div>
-      <div class="weight-label">购票凭证<br>（必填）</div>
+      <div class="weight-label">①想看截图<br>+②好评截图<br>（两项必填）</div>
     </div>
     <div class="weight-vs">VS</div>
     <div class="weight-item gold">
       <div class="weight-num">2</div>
       <div class="weight-unit">张抽奖票</div>
-      <div class="weight-label">购票凭证<br>+ 现场打卡照</div>
+      <div class="weight-label">以上两项<br>+ ③现场照片</div>
     </div>
   </div>
  
@@ -386,8 +386,8 @@ select option { background: var(--bg-card); }
       <ul class="rules-list">
         <li>仅限CJ内部员工参与，企业邮箱验证身份，每人只能提交一次</li>
         <li>点映时间：6月1日—4日，请留好观影凭证（照片/截图），回到方便登录企业邮箱的环境再提交</li>
-        <li>上传购票凭证 = <strong style="color:var(--text-primary);">1张抽奖票</strong></li>
-        <li>额外上传现场打卡照 = <strong style="color:var(--accent);">2张抽奖票</strong>，中奖概率翻倍</li>
+        <li>上传①想看截图 + ②好评截图 = <strong style="color:var(--text-primary);">1张抽奖票</strong>（两项必填）</li>
+        <li>额外上传③现场照片 = <strong style="color:var(--accent);">2张抽奖票</strong>，中奖概率翻倍</li>
         <li>凭证由人工审核，通过后按票数进入抽奖池</li>
         <li>6月8日公开随机抽奖，通过手机/邮件通知获奖者</li>
       </ul>
@@ -416,23 +416,13 @@ let generatedCode = '', pendingEmail = '', cdTimer = null;
 /* ══════════════════════════════════
    Cloudflare Worker 地址（中转飞书API）
    ══════════════════════════════════ */
-const WORKER_URL    = 'https://cj-feishu.byeori0821.workers.dev';
+const IMGBB_API_KEY  = '5a66f0cdef6d02ee15185678cb1bf39d';
+const WORKER_URL     = 'https://cj-feishu.byeori0821.workers.dev';
 const FEISHU_APP_ID     = 'cli_aa9eb969deba9cbc';
 const FEISHU_APP_SECRET = 'Y9sfWz7sw2e0iSCaDiSFtejOoaeNF4zQ';
 const FEISHU_APP_TOKEN  = 'KVkwb9Npva34gWsog61c9o5onvv';
 const FEISHU_TABLE_ID   = 'tblkjCevUYnwH1nz';
- 
-/* 把文件转成 base64 */
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
- 
-/* 通过 Cloudflare Worker 提交到飞书 */
+
 /* 图片压缩：限制最长边1200px，质量0.8 */
 function compressImage(file) {
   return new Promise((resolve) => {
@@ -450,7 +440,7 @@ function compressImage(file) {
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         canvas.toBlob((blob) => {
-          resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
         }, 'image/jpeg', 0.8);
       };
       img.src = e.target.result;
@@ -458,29 +448,44 @@ function compressImage(file) {
     reader.readAsDataURL(file);
   });
 }
-async function saveEntry(entry, photoFile, ticketFile) {
-  const ticketBase64 = await fileToBase64(ticketFile);
-  const photoBase64 = photoFile ? await fileToBase64(photoFile) : null;
+
+/* 上传图片到 ImgBB，直接从浏览器上传，返回图片URL */
+async function uploadToImgBB(file) {
+  const form = new FormData();
+  form.append('image', file);
+  const res = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_API_KEY, {
+    method: 'POST',
+    body: form
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error('图片上传失败: ' + JSON.stringify(data));
+  return data.data.url;
+}
+
+/* 通过 Cloudflare Worker 把信息+图片链接写入飞书 */
+async function saveEntry(entry, photoFile, ticketFile, reviewFile) {
+  const ticketUrl = await uploadToImgBB(ticketFile);
+  const reviewUrl = await uploadToImgBB(reviewFile);
+  const photoUrl  = photoFile ? await uploadToImgBB(photoFile) : null;
 
   const res = await fetch(WORKER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      appId:        FEISHU_APP_ID,
-      appSecret:    FEISHU_APP_SECRET,
-      appToken:     FEISHU_APP_TOKEN,
-      tableId:      FEISHU_TABLE_ID,
+      appId:     FEISHU_APP_ID,
+      appSecret: FEISHU_APP_SECRET,
+      appToken:  FEISHU_APP_TOKEN,
+      tableId:   FEISHU_TABLE_ID,
       entry,
-      photoBase64,
-      photoName:    photoFile ? photoFile.name : null,
-      ticketBase64,
-      ticketName:   ticketFile.name
+      ticketUrl,
+      reviewUrl,
+      photoUrl
     })
   });
   const data = await res.json();
   if (data.code !== 0) throw new Error('提交失败: ' + (data.msg || JSON.stringify(data)));
 }
- 
+
 /* EmailJS 配置 */
 const EMAILJS_SERVICE_ID  = 'whdnrl';
 const EMAILJS_TEMPLATE_ID = 'template_sq837dv';
@@ -564,8 +569,10 @@ async function submitEntry() {
   const date    = document.getElementById('date-input').value;
   const photo   = document.getElementById('photo-file').files[0];
   const ticket  = document.getElementById('ticket-file').files[0];
+  const review  = document.getElementById('review-file').files[0];
   if (!name || !company || !dept || !phone || !date) { alert('请填写所有必填信息'); return; }
-  if (!ticket) { alert('请上传购票凭证'); return; }
+  if (!ticket) { alert('请上传「想看」截图（图片①）'); return; }
+  if (!review) { alert('请上传好评截图（图片②）'); return; }
 
   const tickets = photo ? 2 : 1;
   const id = 'CJ' + Date.now().toString().slice(-6);
@@ -587,7 +594,9 @@ async function submitEntry() {
     const ticketCompressed = await compressImage(ticket);
 
     btn.textContent = '② 上传凭证中…';
-    await saveEntry(entry, photoCompressed, ticketCompressed);
+    const reviewCompressed = await compressImage(review);
+    btn.textContent = '② 上传图片中…（请稍候）';
+    await saveEntry(entry, photoCompressed, ticketCompressed, reviewCompressed);
     document.getElementById('ticket-num').textContent = id;
     document.getElementById('earned-text').textContent = '持有 ' + tickets + ' 张抽奖票' + (tickets === 2 ? ' 🎉' : '');
     document.getElementById('form-view').style.display = 'none';
