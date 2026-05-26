@@ -239,6 +239,7 @@ select option { background: var(--bg-card); }
 }
 .success-sub { font-size: 13px; color: var(--text-second); line-height: 1.8; margin-top: 10px; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -455,14 +456,36 @@ async function saveEntry(entry, photoFile, ticketFile) {
   if (data.code !== 0) throw new Error('提交失败: ' + (data.msg || JSON.stringify(data)));
 }
  
-function sendCode() {
+/* EmailJS 配置 */
+const EMAILJS_SERVICE_ID  = 'whdnrl';
+const EMAILJS_TEMPLATE_ID = 'template_sq837dv';
+const EMAILJS_PUBLIC_KEY  = 'kbase1fe1D76XS223';
+
+async function sendCode() {
   const email = document.getElementById('email-input').value.trim();
   if (!email || !email.includes('@')) { setHint('send-hint','请输入有效企业邮箱','err'); return; }
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true; btn.textContent = '发送中…';
+
   generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
   pendingEmail = email;
-  setHint('send-hint', '✓ 验证码已发送（演示模式：' + generatedCode + '）', 'ok');
-  const btn = document.getElementById('send-btn');
-  btn.disabled = true; let cd = 60;
+
+  try {
+    await emailjs.send(
+      EMAILJS_SERVICE_ID,
+      EMAILJS_TEMPLATE_ID,
+      { to_email: email, code: generatedCode },
+      EMAILJS_PUBLIC_KEY
+    );
+    setHint('send-hint', '✓ 验证码已发送，请查收邮件（注意检查垃圾邮件）', 'ok');
+  } catch(err) {
+    setHint('send-hint', '✗ 发送失败，请检查邮箱后重试', 'err');
+    btn.disabled = false; btn.textContent = '发送验证码';
+    return;
+  }
+
+  let cd = 60;
   cdTimer = setInterval(() => {
     cd--; btn.textContent = cd + 's后重发';
     if (cd <= 0) { clearInterval(cdTimer); btn.disabled = false; btn.textContent = '重新发送'; }
