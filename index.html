@@ -427,11 +427,8 @@ let generatedCode = '', pendingEmail = '', cdTimer = null;
 /* ══════════════════════════════════
    Cloudflare Worker 地址（中转飞书API）
    ══════════════════════════════════ */
-const COS_SECRET_ID  = 'AKIDXN3Zt10nfMsDNOD8rT7g6KbllbJSVO8j';
-const COS_SECRET_KEY = 'cHlIveBh6Vq5A71rlZJ0c7auDc4RMJQS';
-const COS_BUCKET     = 'cj-lottery-1437002346';
-const COS_REGION     = 'ap-beijing';
-const WORKER_URL     = 'https://cj-feishu.byeori0821.workers.dev';
+const IMGBB_API_KEY  = '5a66f0cdef6d02ee15185678cb1bf39d';
+const WORKER_URL    = 'https://cj-feishu.byeori0821.workers.dev';
 const FEISHU_APP_ID     = 'cli_aa9eb969deba9cbc';
 const FEISHU_APP_SECRET = 'Y9sfWz7sw2e0iSCaDiSFtejOoaeNF4zQ';
 const FEISHU_APP_TOKEN  = 'KVkwb9Npva34gWsog61c9o5onvv';
@@ -462,41 +459,14 @@ function compressImage(file) {
     reader.readAsDataURL(file);
   });
 }
-/* 上传图片到腾讯云COS */
-async function sha1hex(msg) {
-  const buf = new TextEncoder().encode(msg);
-  const hash = await crypto.subtle.digest('SHA-1', buf);
-  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-async function hmacSHA1hex(key, msg) {
-  const enc = new TextEncoder();
-  const kb = typeof key === 'string' ? enc.encode(key) : key;
-  const k = await crypto.subtle.importKey('raw', kb, {name:'HMAC',hash:'SHA-1'}, false, ['sign']);
-  const sig = await crypto.subtle.sign('HMAC', k, enc.encode(msg));
-  return Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-async function uploadToCOS(file) {
-  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-  const key = 'uploads/' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + ext;
-  const path = '/' + key;
-  const host = COS_BUCKET + '.cos.' + COS_REGION + '.myqcloud.com';
-  const now = Math.floor(Date.now()/1000);
-  const keyTime = now + ';' + (now + 3600);
-  const signKey = await hmacSHA1hex(COS_SECRET_KEY, keyTime);
-  const httpStr = 'put\n' + path + '\n\nhost=' + host + '\n';
-  const strToSign = 'sha1\n' + keyTime + '\n' + await sha1hex(httpStr) + '\n';
-  const sig = await hmacSHA1hex(signKey, strToSign);
-  const auth = 'q-sign-algorithm=sha1&q-ak=' + COS_SECRET_ID +
-    '&q-sign-time=' + keyTime + '&q-key-time=' + keyTime +
-    '&q-header-list=host&q-url-param-list=&q-signature=' + sig;
-  const url = 'https://' + host + path;
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Authorization': auth, 'Host': host, 'Content-Type': file.type || 'image/jpeg' },
-    body: file
+/* 文件转base64 */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
-  if (!res.ok) throw new Error('COS上传失败: ' + res.status);
-  return url;
 }
 
 async function saveEntry(entry, photoFile, ticketFile, reviewFile) {
@@ -513,9 +483,12 @@ async function saveEntry(entry, photoFile, ticketFile, reviewFile) {
       appToken:  FEISHU_APP_TOKEN,
       tableId:   FEISHU_TABLE_ID,
       entry,
-      ticketUrl,
-      reviewUrl,
-      photoUrl
+      ticketB64,
+      ticketName: ticketFile.name,
+      reviewB64,
+      reviewName: reviewFile.name,
+      photoB64:   photoB64 || null,
+      photoName:  photoFile ? photoFile.name : null
     })
   });
   const data = await res.json();
