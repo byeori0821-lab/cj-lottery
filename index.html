@@ -259,13 +259,13 @@ select option { background: var(--bg-card); }
     <div class="weight-item">
       <div class="weight-num">1</div>
       <div class="weight-unit">张抽奖票</div>
-      <div class="weight-label">①想看截图<br>+②好评截图<br>（两项必填）</div>
+      <div class="weight-label">购票凭证<br>（必填）</div>
     </div>
     <div class="weight-vs">VS</div>
     <div class="weight-item gold">
       <div class="weight-num">2</div>
       <div class="weight-unit">张抽奖票</div>
-      <div class="weight-label">以上两项<br>+ ③现场照片</div>
+      <div class="weight-label">购票凭证<br>+ 现场打卡照</div>
     </div>
   </div>
  
@@ -341,23 +341,34 @@ select option { background: var(--bg-card); }
       <div class="card-title"><span class="step-num">3</span> 上传观影凭证</div>
 
       <div class="form-row">
-        <label class="form-label">购票凭证 <span class="req">*</span><span class="label-hint">截图或票根照片</span></label>
+        <label class="form-label">① 猫眼/淘票票「想看」截图 <span class="req">*</span></label>
         <div class="upload-zone" onclick="document.getElementById('ticket-file').click()">
           <input type="file" id="ticket-file" accept="image/*" onchange="handleFile(this,'ticket-ok')" style="display:none;" />
-          <div class="upload-icon">🎫</div>
-          <div class="upload-label">点击上传购票凭证</div>
-          <div class="upload-sub">截图 / 纸质票根照片</div>
+          <div class="upload-icon">🎬</div>
+          <div class="upload-label">点击上传「想看」截图</div>
+          <div class="upload-sub">猫眼 / 淘票票 点击「想看」后的截图</div>
           <div class="upload-ok" id="ticket-ok"></div>
         </div>
       </div>
 
       <div class="form-row">
-        <label class="form-label">现场打卡照<span class="label-hint">选填 · 上传后获得双倍抽奖机会</span></label>
+        <label class="form-label">② 五星好评 &amp; 发布评论截图 <span class="req">*</span></label>
+        <div class="upload-zone" onclick="document.getElementById('review-file').click()">
+          <input type="file" id="review-file" accept="image/*" onchange="handleFile(this,'review-ok')" style="display:none;" />
+          <div class="upload-icon">⭐</div>
+          <div class="upload-label">点击上传好评截图</div>
+          <div class="upload-sub">五星评分 + 发布评论的截图</div>
+          <div class="upload-ok" id="review-ok"></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">③ 观影现场照片<span class="label-hint">选填 · 上传后获得双倍抽奖机会</span></label>
         <div class="location-box">
           <div class="location-top">
             <div style="flex:1;">
               <div class="location-bonus-title">上传现场照 = 双倍抽奖机会 🎯</div>
-              <div class="location-bonus-sub">在影厅内拍摄，可含座位/票根</div>
+              <div class="location-bonus-sub">影院照片 / 和朋友看电影 / 手持票根 / 任何与《极限逃生》相关的照片</div>
             </div>
             <div class="tickets-badge" id="tickets-badge">1张票</div>
           </div>
@@ -365,7 +376,7 @@ select option { background: var(--bg-card); }
             <div class="upload-zone" onclick="document.getElementById('photo-file').click()" style="border-radius:0; border:none; border-top: 1px solid var(--border);">
               <input type="file" id="photo-file" accept="image/*" onchange="handleFile(this,'photo-ok')" style="display:none;" />
               <div class="upload-icon">📷</div>
-              <div class="upload-label">点击上传现场打卡照</div>
+              <div class="upload-label">点击上传现场照片</div>
               <div class="upload-sub">jpg / png</div>
               <div class="upload-ok" id="photo-ok"></div>
             </div>
@@ -417,12 +428,12 @@ let generatedCode = '', pendingEmail = '', cdTimer = null;
    Cloudflare Worker 地址（中转飞书API）
    ══════════════════════════════════ */
 const IMGBB_API_KEY  = '5a66f0cdef6d02ee15185678cb1bf39d';
-const WORKER_URL     = 'https://cj-feishu.byeori0821.workers.dev';
+const WORKER_URL    = 'https://cj-feishu.byeori0821.workers.dev';
 const FEISHU_APP_ID     = 'cli_aa9eb969deba9cbc';
 const FEISHU_APP_SECRET = 'Y9sfWz7sw2e0iSCaDiSFtejOoaeNF4zQ';
 const FEISHU_APP_TOKEN  = 'KVkwb9Npva34gWsog61c9o5onvv';
 const FEISHU_TABLE_ID   = 'tblkjCevUYnwH1nz';
-
+ 
 /* 图片压缩：限制最长边1200px，质量0.8 */
 function compressImage(file) {
   return new Promise((resolve) => {
@@ -440,7 +451,7 @@ function compressImage(file) {
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         canvas.toBlob((blob) => {
-          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+          resolve(new File([blob], file.name, { type: 'image/jpeg' }));
         }, 'image/jpeg', 0.8);
       };
       img.src = e.target.result;
@@ -448,8 +459,7 @@ function compressImage(file) {
     reader.readAsDataURL(file);
   });
 }
-
-/* 上传图片到 ImgBB，直接从浏览器上传，返回图片URL */
+/* 上传图片到 ImgBB */
 async function uploadToImgBB(file) {
   const form = new FormData();
   form.append('image', file);
@@ -458,11 +468,10 @@ async function uploadToImgBB(file) {
     body: form
   });
   const data = await res.json();
-  if (!data.success) throw new Error('图片上传失败: ' + JSON.stringify(data));
+  if (!data.success) throw new Error('图片上传失败');
   return data.data.url;
 }
 
-/* 通过 Cloudflare Worker 把信息+图片链接写入飞书 */
 async function saveEntry(entry, photoFile, ticketFile, reviewFile) {
   const ticketUrl = await uploadToImgBB(ticketFile);
   const reviewUrl = await uploadToImgBB(reviewFile);
@@ -485,7 +494,7 @@ async function saveEntry(entry, photoFile, ticketFile, reviewFile) {
   const data = await res.json();
   if (data.code !== 0) throw new Error('提交失败: ' + (data.msg || JSON.stringify(data)));
 }
-
+ 
 /* EmailJS 配置 */
 const EMAILJS_SERVICE_ID  = 'whdnrl';
 const EMAILJS_TEMPLATE_ID = 'template_sq837dv';
