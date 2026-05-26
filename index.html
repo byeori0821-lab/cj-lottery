@@ -249,9 +249,8 @@ select option { background: var(--bg-card); }
     <h1>极限逃生 点映支持回馈</h1>
     <div class="header-sub">去看了就来参与抽奖，奖品是 BOH 面膜！</div>
     <div class="dates-row">
-      <div class="date-badge">6月1日 点映</div>
-      <div class="date-badge">6月4日 点映</div>
-      <div class="date-badge">6月5日 开奖</div>
+      <div class="date-badge">6月1日—4日 点映</div>
+      <div class="date-badge">6月8日 开奖</div>
     </div>
   </div>
  
@@ -259,13 +258,13 @@ select option { background: var(--bg-card); }
     <div class="weight-item">
       <div class="weight-num">1</div>
       <div class="weight-unit">张抽奖票</div>
-      <div class="weight-label">上传现场照<br>+ 购票凭证</div>
+      <div class="weight-label">购票凭证<br>（必填）</div>
     </div>
     <div class="weight-vs">VS</div>
     <div class="weight-item gold">
       <div class="weight-num">2</div>
       <div class="weight-unit">张抽奖票</div>
-      <div class="weight-label">凭证 + 到场<br>📍 定位打卡</div>
+      <div class="weight-label">购票凭证<br>+ 现场打卡照</div>
     </div>
   </div>
  
@@ -326,6 +325,8 @@ select option { background: var(--bg-card); }
         <select id="date-input">
           <option value="">请选择</option>
           <option value="6.1">6月1日</option>
+          <option value="6.2">6月2日</option>
+          <option value="6.3">6月3日</option>
           <option value="6.4">6月4日</option>
         </select>
       </div>
@@ -333,46 +334,40 @@ select option { background: var(--bg-card); }
  
     <div class="card disabled" id="proof-card">
       <div class="card-title"><span class="step-num">3</span> 上传观影凭证</div>
- 
+
       <div class="form-row">
-        <label class="form-label">现场照片 <span class="req">*</span><span class="label-hint">影厅内拍摄，含时间水印更佳</span></label>
-        <div class="upload-zone" onclick="document.getElementById('photo-file').click()">
-          <input type="file" id="photo-file" accept="image/*" onchange="handleFile(this,'photo-ok')" style="display:none;" />
-          <div class="upload-icon">📷</div>
-          <div class="upload-label">点击上传现场照</div>
-          <div class="upload-sub">jpg / png</div>
-          <div class="upload-ok" id="photo-ok"></div>
-        </div>
-      </div>
- 
-      <div class="form-row">
-        <label class="form-label">购票凭证 <span class="req">*</span><span class="label-hint">票根或购票截图</span></label>
+        <label class="form-label">购票凭证 <span class="req">*</span><span class="label-hint">截图或票根照片</span></label>
         <div class="upload-zone" onclick="document.getElementById('ticket-file').click()">
           <input type="file" id="ticket-file" accept="image/*" onchange="handleFile(this,'ticket-ok')" style="display:none;" />
           <div class="upload-icon">🎫</div>
           <div class="upload-label">点击上传购票凭证</div>
-          <div class="upload-sub">截图/纸质票根</div>
+          <div class="upload-sub">截图 / 纸质票根照片</div>
           <div class="upload-ok" id="ticket-ok"></div>
         </div>
       </div>
- 
+
       <div class="form-row">
-        <label class="form-label">到场定位打卡</label>
+        <label class="form-label">现场打卡照<span class="label-hint">选填 · 上传后获得双倍抽奖机会</span></label>
         <div class="location-box">
           <div class="location-top">
             <div style="flex:1;">
-              <div class="location-bonus-title">打卡成功 = 双倍抽奖机会 🎯</div>
-              <div class="location-bonus-sub">需在电影院现场获取</div>
+              <div class="location-bonus-title">上传现场照 = 双倍抽奖机会 🎯</div>
+              <div class="location-bonus-sub">在影厅内拍摄，可含座位/银幕/票根</div>
             </div>
             <div class="tickets-badge" id="tickets-badge">1张票</div>
           </div>
-          <button class="loc-btn" onclick="getLocation()">
-            📍 <span id="loc-btn-text">获取当前位置（+1张抽奖票）</span>
-          </button>
-          <div class="loc-result" id="loc-result"></div>
+          <div style="padding:0;">
+            <div class="upload-zone" onclick="document.getElementById('photo-file').click()" style="border-radius:0; border:none; border-top: 1px solid var(--border);">
+              <input type="file" id="photo-file" accept="image/*" onchange="handleFile(this,'photo-ok')" style="display:none;" />
+              <div class="upload-icon">📷</div>
+              <div class="upload-label">点击上传现场打卡照</div>
+              <div class="upload-sub">jpg / png</div>
+              <div class="upload-ok" id="photo-ok"></div>
+            </div>
+          </div>
         </div>
       </div>
- 
+
       <div id="ticket-preview" style="display:none;">
         <div class="ticket-preview">
           🎟 <span id="ticket-preview-text">您将持有 1 张抽奖票参与抽奖</span>
@@ -385,10 +380,11 @@ select option { background: var(--bg-card); }
     <div class="rules-box">
       <ul class="rules-list">
         <li>仅限CJ内部员工参与，企业邮箱验证身份，每人只能提交一次</li>
-        <li>上传现场照 + 购票凭证 = <strong style="color:var(--text-primary);">1张抽奖票</strong></li>
-        <li>额外完成到场定位打卡 = <strong style="color:var(--accent);">2张抽奖票</strong>，中奖概率翻倍</li>
+        <li>点映时间：6月1日—4日，请留好观影凭证，回到有电脑的环境再提交</li>
+        <li>上传购票凭证 = <strong style="color:var(--text-primary);">1张抽奖票</strong></li>
+        <li>额外上传现场打卡照 = <strong style="color:var(--accent);">2张抽奖票</strong>，中奖概率翻倍</li>
         <li>凭证由人工审核，通过后按票数进入抽奖池</li>
-        <li>6月5日公开随机抽奖，通过手机/邮件通知获奖者</li>
+        <li>6月8日公开随机抽奖，通过手机/邮件通知获奖者</li>
       </ul>
     </div>
   </div>
@@ -402,14 +398,14 @@ select option { background: var(--bg-card); }
       <div class="success-sub">
         这是您的专属抽奖编号，请截图保存<br>
         凭证经审核通过后正式入池<br>
-        6月5日公开开奖，届时会通知您
+        6月8日公开开奖，届时会通知您
       </div>
     </div>
   </div>
  
 </div>
 <script>
-let emailVerified = false, verifiedEmail = '', locationData = null;
+let emailVerified = false, verifiedEmail = '';
 let generatedCode = '', pendingEmail = '', cdTimer = null;
  
 /* ══════════════════════════════════
@@ -433,11 +429,9 @@ function fileToBase64(file) {
  
 /* 通过 Cloudflare Worker 提交到飞书 */
 async function saveEntry(entry, photoFile, ticketFile) {
-  const [photoBase64, ticketBase64] = await Promise.all([
-    fileToBase64(photoFile),
-    fileToBase64(ticketFile)
-  ]);
- 
+  const ticketBase64 = await fileToBase64(ticketFile);
+  const photoBase64 = photoFile ? await fileToBase64(photoFile) : null;
+
   const res = await fetch(WORKER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -448,7 +442,7 @@ async function saveEntry(entry, photoFile, ticketFile) {
       tableId:      FEISHU_TABLE_ID,
       entry,
       photoBase64,
-      photoName:    photoFile.name,
+      photoName:    photoFile ? photoFile.name : null,
       ticketBase64,
       ticketName:   ticketFile.name
     })
@@ -499,30 +493,14 @@ function handleFile(input, okId) {
   }
 }
  
-function getLocation() {
-  document.getElementById('loc-btn-text').textContent = '定位中…';
-  if (!navigator.geolocation) { locFail(); return; }
-  navigator.geolocation.getCurrentPosition(pos => {
-    locationData = { lat: pos.coords.latitude.toFixed(4), lng: pos.coords.longitude.toFixed(4) };
-    document.getElementById('loc-btn-text').textContent = '✓ 已获取，点击重新定位';
-    const r = document.getElementById('loc-result');
-    r.textContent = '📍 ' + locationData.lat + ', ' + locationData.lng + ' — 打卡成功！';
-    r.className = 'loc-result ok'; r.style.display = 'block';
-    document.getElementById('tickets-badge').textContent = '2张票 🎉';
-    updatePreview();
-  }, locFail);
-}
-function locFail() {
-  document.getElementById('loc-btn-text').textContent = '获取失败，点击重试';
-  const r = document.getElementById('loc-result');
-  r.textContent = '无法获取定位，可跳过（持1张票参与）';
-  r.className = 'loc-result'; r.style.display = 'block';
-}
+
 function updatePreview() {
-  const t = locationData ? 2 : 1;
+  const hasPhoto = document.getElementById('photo-file').files.length > 0;
+  const t = hasPhoto ? 2 : 1;
+  document.getElementById('tickets-badge').textContent = t === 2 ? '2张票 🎉' : '1张票';
   document.getElementById('ticket-preview').style.display = 'block';
   document.getElementById('ticket-preview-text').textContent =
-    '您将持有 ' + t + ' 张抽奖票参与抽奖' + (t === 2 ? ' 🎉 定位加成已生效' : '');
+    '您将持有 ' + t + ' 张抽奖票参与抽奖' + (t === 2 ? ' 🎉 现场照加成已生效' : '');
 }
  
 async function submitEntry() {
@@ -535,22 +513,23 @@ async function submitEntry() {
   const photo   = document.getElementById('photo-file').files[0];
   const ticket  = document.getElementById('ticket-file').files[0];
   if (!name || !company || !dept || !phone || !date) { alert('请填写所有必填信息'); return; }
-  if (!photo || !ticket) { alert('请上传现场照和购票凭证'); return; }
- 
+  if (!ticket) { alert('请上传购票凭证'); return; }
+
+  const tickets = photo ? 2 : 1;
   const id = 'CJ' + Date.now().toString().slice(-6);
-  const tickets = locationData ? 2 : 1;
   const entry = {
     id, name, company, dept, phone, date, email: verifiedEmail,
-    photo: photo.name, ticket: ticket.name,
-    location: locationData ? locationData.lat + ',' + locationData.lng : null,
+    photo: photo ? photo.name : '未上传',
+    ticket: ticket.name,
+    location: null,
     tickets, status: 'pending',
     time: new Date().toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })
   };
- 
+
   // 显示提交中状态
   const btn = document.querySelector('.submit-btn');
   btn.textContent = '上传中，请稍候…'; btn.disabled = true;
- 
+
   try {
     await saveEntry(entry, photo, ticket);
     document.getElementById('ticket-num').textContent = id;
