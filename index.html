@@ -427,8 +427,11 @@ let generatedCode = '', pendingEmail = '', cdTimer = null;
 /* ══════════════════════════════════
    Cloudflare Worker 地址（中转飞书API）
    ══════════════════════════════════ */
-const IMGBB_API_KEY  = '5a66f0cdef6d02ee15185678cb1bf39d';
-const WORKER_URL    = 'https://cj-feishu.byeori0821.workers.dev';
+const COS_SECRET_ID  = 'AKIDXN3Zt10nfMsDNOD8rT7g6KbllbJSVO8j';
+const COS_SECRET_KEY = 'cHlIveBh6Vq5A71rlZJ0c7auDc4RMJQS';
+const COS_BUCKET     = 'cj-lottery-1437002346';
+const COS_REGION     = 'ap-beijing';
+const WORKER_URL     = 'https://cj-feishu.byeori0821.workers.dev';
 const FEISHU_APP_ID     = 'cli_aa9eb969deba9cbc';
 const FEISHU_APP_SECRET = 'Y9sfWz7sw2e0iSCaDiSFtejOoaeNF4zQ';
 const FEISHU_APP_TOKEN  = 'KVkwb9Npva34gWsog61c9o5onvv';
